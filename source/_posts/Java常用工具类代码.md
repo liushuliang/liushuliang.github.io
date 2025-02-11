@@ -69,6 +69,25 @@ package cn.hutool.core.date;
 	}
 ```
 
+### string转LocalDateTime
+
+```java
+    /**
+     * 将字符串转为LocalDateTime
+     *
+     * @param dateTimeString
+     * @return java.time.LocalDateTime
+     * @author 刘书良
+     * 2025/1/9 9:34
+     **/
+    public static LocalDateTime stringToLocalDateTime(String dateTimeString) {
+        LocalDateTime localDateTime = LocalDateTimeUtil.parse(dateTimeString, DatePattern.NORM_DATETIME_PATTERN);
+        return localDateTime;
+    }
+```
+
+
+
 ## 把map中的值转为list
 
 ```java
