@@ -4,6 +4,44 @@
   
   
   <entry>
+    <title>使用BiConsumer接口</title>
+    <link href="/2025/02/20/%E4%BD%BF%E7%94%A8BiConsumer%E6%8E%A5%E5%8F%A3/"/>
+    <url>/2025/02/20/%E4%BD%BF%E7%94%A8BiConsumer%E6%8E%A5%E5%8F%A3/</url>
+    
+    <content type="html"><![CDATA[<h1 id="记一次使用BiConsumer记录"><a href="#记一次使用BiConsumer记录" class="headerlink" title="记一次使用BiConsumer记录"></a>记一次使用BiConsumer记录</h1><h3 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h3><p>在对接HL7中过程中遇到了一段代码，非常繁琐，想找找优化代码的方案，询问了ChatGPT，回答了这个接口。</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">switch</span> (type) &#123;<br>    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;IMP&quot;</span>:<br>        pacsPO.setImpression(<span class="hljs-built_in">this</span>.getHl7Value(data));<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;REC&quot;</span>:<br>        pacsPO.setAdvice(<span class="hljs-built_in">this</span>.getHl7Value(data));<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;GDT&quot;</span>:<br>        pacsPO.setSee(<span class="hljs-built_in">this</span>.getHl7Value(data));<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;RRP&quot;</span>:<br>        pacsPO.setReportUrl(<span class="hljs-built_in">this</span>.getHl7Value(data));<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;ZMF&quot;</span>:<br>        pacsPO.setMasterReportFile(<span class="hljs-built_in">this</span>.getHl7Value(data));<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;ZRF&quot;</span>:<br>        pacsPO.setRelationReportFile(<span class="hljs-built_in">this</span>.getHl7Value(data));<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;AFD&quot;</span>:<br>        pacsPO.setObserValue(<span class="hljs-built_in">this</span>.getHl7Value(data));<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;ANT&quot;</span>:<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;I9&quot;</span>:<br>        pacsPO.setDiagName(<span class="hljs-built_in">this</span>.getHl7Value(data));<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> <span class="hljs-string">&quot;CMR&quot;</span>:<br>        <span class="hljs-keyword">continue</span>;<br>    <span class="hljs-keyword">default</span>:<br>        <span class="hljs-keyword">continue</span>;<br>&#125;<br></code></pre></td></tr></table></figure><p>大体特征是每个类型对应一个set方法。</p><h2 id="优化方案"><a href="#优化方案" class="headerlink" title="优化方案"></a>优化方案</h2><p>先初始化这个map，放进去一个方法</p><figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs livescript"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * typeHandlerMap用于存放对应类型所应该字段的赋值</span><br><span class="hljs-comment"> **/</span><br>private <span class="hljs-keyword">static</span> <span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">String</span>, BiConsumer&lt;PatientPacsResultPO, Type&gt;&gt; typeHandlerMap = <span class="hljs-keyword">new</span> HashMap&lt;&gt;();<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 初始化typeHandlerMap</span><br><span class="hljs-comment"> * 2025/2/20 9:52</span><br><span class="hljs-comment"> **/</span><br><span class="hljs-keyword">static</span> &#123;<br>    typeHandlerMap.put<span class="hljs-function"><span class="hljs-params">(<span class="hljs-string">&quot;IMP&quot;</span>, (po, data) -&gt; po.setImpression(getHl7Value(data)))</span>;</span><br><span class="hljs-function">    <span class="hljs-title">typeHandlerMap</span>.<span class="hljs-title">put</span><span class="hljs-params">(<span class="hljs-string">&quot;GDT&quot;</span>, (po, data) -&gt; po.setSee(getHl7Value(data)))</span>;</span><br><span class="hljs-function">    <span class="hljs-title">typeHandlerMap</span>.<span class="hljs-title">put</span><span class="hljs-params">(<span class="hljs-string">&quot;REC&quot;</span>, (po, data) -&gt; po.setAdvice(getHl7Value(data)))</span>;</span><br><span class="hljs-function">    <span class="hljs-title">typeHandlerMap</span>.<span class="hljs-title">put</span><span class="hljs-params">(<span class="hljs-string">&quot;RRP&quot;</span>, (po, data) -&gt; po.setReportUrl(getHl7Value(data)))</span>;</span><br><span class="hljs-function">    <span class="hljs-title">typeHandlerMap</span>.<span class="hljs-title">put</span><span class="hljs-params">(<span class="hljs-string">&quot;ZMF&quot;</span>, (po, data) -&gt; po.setMasterReportFile(getHl7Value(data)))</span>;</span><br><span class="hljs-function">    <span class="hljs-title">typeHandlerMap</span>.<span class="hljs-title">put</span><span class="hljs-params">(<span class="hljs-string">&quot;ZRF&quot;</span>, (po, data) -&gt; po.setRelationReportFile(getHl7Value(data)))</span>;</span><br><span class="hljs-function">    <span class="hljs-title">typeHandlerMap</span>.<span class="hljs-title">put</span><span class="hljs-params">(<span class="hljs-string">&quot;AFD&quot;</span>, (po, data) -&gt; po.setObserValue(getHl7Value(data)))</span>;</span><br><span class="hljs-function">    <span class="hljs-title">typeHandlerMap</span>.<span class="hljs-title">put</span><span class="hljs-params">(<span class="hljs-string">&quot;I9&quot;</span>, (po, data) -&gt; po.setDiagName(getHl7Value(data)))</span>;</span><br><span class="hljs-function">&#125;</span><br></code></pre></td></tr></table></figure><p>然后方法中调用</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">typeHandlerMap.getOrDefault(type, (po, d) -&gt; &#123;<br>                    &#125;).accept(pacsPO, data);<br></code></pre></td></tr></table></figure>]]></content>
+    
+    
+    <categories>
+      
+      <category>Java基础知识</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>lombok编程</title>
+    <link href="/2025/02/19/lombok%E9%93%BE%E5%BC%8F%E7%BC%96%E7%A8%8B/"/>
+    <url>/2025/02/19/lombok%E9%93%BE%E5%BC%8F%E7%BC%96%E7%A8%8B/</url>
+    
+    <content type="html"><![CDATA[<h1 id="lombok链式编程；可以一直点set方法"><a href="#lombok链式编程；可以一直点set方法" class="headerlink" title="lombok链式编程；可以一直点set方法"></a>lombok链式编程；可以一直点set方法</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">new</span> <span class="hljs-title class_">PatientPacsApplyPO</span>()<br>                .setPatientIdent(patientIdent)<br>                .setHospitalNumber(hospitalNumber)<br>                .setGender(gender)<br>                .setPatientName(patientName);<br></code></pre></td></tr></table></figure><p>要实现上述代码可以添加注解<code>@Accessors(chain = true)</code></p>]]></content>
+    
+    
+    <categories>
+      
+      <category>Java基础知识</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>mybatis多数据源问题</title>
     <link href="/2025/02/11/mybatis%E5%A4%9A%E6%95%B0%E6%8D%AE%E6%BA%90%E9%97%AE%E9%A2%98/"/>
     <url>/2025/02/11/mybatis%E5%A4%9A%E6%95%B0%E6%8D%AE%E6%BA%90%E9%97%AE%E9%A2%98/</url>
@@ -13,7 +51,7 @@
     
     <categories>
       
-      <category>mybayis</category>
+      <category>MyBatis</category>
       
     </categories>
     
