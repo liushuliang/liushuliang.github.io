@@ -35,13 +35,13 @@ MyBatis 在编写动态SQL的时候，是基于OGNL的。
 
 | 符号  | 转义字符 |   说明   |
 | ----- | -------- | :------: |
-| <     | &lt;     |   小于   |
-| <=    | &lt;=    | 小于等于 |
-| >     | &gt;     |   大于   |
-| >=    | &gt;=    | 大于等于 |
-| &     | &amp;    |  逻辑与  |
-| 'xxx' | &apos;   |  单引号  |
-| "xxx" | &quot;   |  双引号  |
+| <     | \&lt;    |   小于   |
+| <=    | \&lt;=   | 小于等于 |
+| >     | \&gt;    |   大于   |
+| >=    | \&gt;=   | 大于等于 |
+| &     | \&amp;   |  逻辑与  |
+| 'xxx' | \&apos;  |  单引号  |
+| "xxx" | \&quot;  |  双引号  |
 
 ```sql
 <select id="getLoginLogByPage" resultType="com.mcp.entity.LoginLog">

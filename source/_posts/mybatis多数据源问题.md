@@ -1,7 +1,7 @@
 ---
 title: mybatis多数据源问题
 date: 2025-02-11 11:27:26
-categories: mybayis
+categories: MyBatis
 ---
 
 # mybatis多数据源问题
