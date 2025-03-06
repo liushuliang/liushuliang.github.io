@@ -4,6 +4,44 @@
   
   
   <entry>
+    <title>MySQL事务执行卡住</title>
+    <link href="/2025/03/06/%E4%BA%8B%E5%8A%A1%E6%89%A7%E8%A1%8C%E5%8D%A1%E4%BD%8F/"/>
+    <url>/2025/03/06/%E4%BA%8B%E5%8A%A1%E6%89%A7%E8%A1%8C%E5%8D%A1%E4%BD%8F/</url>
+    
+    <content type="html"><![CDATA[<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>我今天执行一个方法，该方法有<code>@Transactional(rollbackFor = Exception.class)</code>,方法执行没有报错，在返回之后提交事务，会执行到<code>private native int socketRead0(FileDescriptor fd, byte b[], int off, int len, int timeout)</code>阻塞起来，程序无法进行，接口报错超时。</p><h2 id="解决办法："><a href="#解决办法：" class="headerlink" title="解决办法："></a>解决办法：</h2><p>我重启了MySQL服务，就正常了，治标不治本。</p><h2 id="猜测："><a href="#猜测：" class="headerlink" title="猜测："></a>猜测：</h2><p>到提交这里阻塞，而且重启MySQL就恢复正常了，应该是MySQL服务中有事务阻塞了。</p><p>下次遇见应该查一下MySQL的阻塞事务，具体看一下是什么原因，这次没找到原因所以没机会复现了，记录一下，便于下次排查纠错。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>MyBatis</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>MySQL和Oracdatetime</title>
+    <link href="/2025/02/27/MySQL%E5%92%8COracle%E4%B8%ADdatetime/"/>
+    <url>/2025/02/27/MySQL%E5%92%8COracle%E4%B8%ADdatetime/</url>
+    
+    <content type="html"><![CDATA[<h2 id="如何把一个时间字符串转为数据库中datetime类型"><a href="#如何把一个时间字符串转为数据库中datetime类型" class="headerlink" title="如何把一个时间字符串转为数据库中datetime类型"></a>如何把一个时间字符串转为数据库中datetime类型</h2><p>MySQL中不存在<code>TO_DATE(str,format)</code>方法，但是可以使用<code>STR_TO_DATE(str,format)</code>方法：</p><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql">STR_TO_DATE ( <span class="hljs-string">&#x27;2025-02-27 06:59:59&#x27;</span>, <span class="hljs-string">&#x27;%Y-%m-%d %H:%i:%s&#x27;</span> )<br></code></pre></td></tr></table></figure><p>Oracle中就可以直接用<code>TO_DATE(str,format)</code>方法，但是<code>format</code>需要注意一下，是不一样的：</p><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql">TO_DATE( <span class="hljs-string">&#x27;2025-02-27 06:59:59&#x27;</span>, <span class="hljs-string">&#x27;yyyy-MM-dd hh24:mi:ss&#x27;</span> )<br></code></pre></td></tr></table></figure>]]></content>
+    
+    
+    <categories>
+      
+      <category>数据库</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>使用BiConsumer接口</title>
     <link href="/2025/02/20/%E4%BD%BF%E7%94%A8BiConsumer%E6%8E%A5%E5%8F%A3/"/>
     <url>/2025/02/20/%E4%BD%BF%E7%94%A8BiConsumer%E6%8E%A5%E5%8F%A3/</url>
